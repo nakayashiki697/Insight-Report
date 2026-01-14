@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析実行中 - Insight Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .analysis-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+        }
+        .progress-section {
+            margin: 30px 0;
+        }
+        .step-card {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .step-card.active {
+            background-color: #e7f3ff;
+            border-color: #667eea;
+        }
+        .step-card.completed {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Insight Report</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">ホーム</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="analysis-container">
+            <h2 class="text-center mb-4">データ分析を実行中</h2>
+            
+            <!-- フラッシュメッセージ -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- 分析情報 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">分析設定</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>ターゲット列:</strong> {{ target_column }}</li>
+                        <li><strong>問題種別:</strong> 
+                            <span class="badge bg-{{ 'primary' if problem_type == 'classification' else 'info' }}">
+                                {{ '分類' if problem_type == 'classification' else '回帰' }}
+                            </span>
+                        </li>
+                        <li><strong>データサイズ:</strong> {{ data_shape.get('rows', 0) }}行 × {{ data_shape.get('columns', 0) }}列</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 進行状況 -->
+            <div class="progress-section">
+                <h4 class="mb-3">分析の進行状況</h4>
+                
+                <div class="step-card completed">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-success">完了</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">データ入力</h6>
+                            <small class="text-muted">CSVファイルのアップロードとターゲット列の選択</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-card active">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">実行中...</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">自動EDA（探索的データ分析）</h6>
+                            <small class="text-muted">基本統計量、欠損値、分布、相関分析の実行中...</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-secondary">待機中</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">前処理・モデル学習</h6>
+                            <small class="text-muted">データ前処理と複数モデルの学習</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-secondary">待機中</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">モデル評価</h6>
+                            <small class="text-muted">ベストモデルの評価と可視化</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-secondary">待機中</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">重要度分析</h6>
+                            <small class="text-muted">Permutation ImportanceとPDPの生成</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-secondary">待機中</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">PDFレポート生成</h6>
+                            <small class="text-muted">分析結果のPDFレポート作成</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 注意メッセージ -->
+            <div class="alert alert-info mt-4">
+                <h6>現在の状況</h6>
+                <p class="mb-0">
+                    Phase 2（自動EDA）の実装が完了次第、実際の分析処理が実行されます。
+                    現在は分析準備画面を表示しています。
+                </p>
+            </div>
+            
+            <!-- 戻るボタン -->
+            <div class="text-center mt-4">
+                <a href="/select-target" class="btn btn-secondary">戻る</a>
+                <a href="/" class="btn btn-outline-secondary ms-2">ホームに戻る</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

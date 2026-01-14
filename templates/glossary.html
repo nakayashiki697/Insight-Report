@@ -1,0 +1,332 @@
+{% extends "layout.html" %}
+
+{% block title %}用語集 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto section-spacing">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4" style="letter-spacing: -0.02em;">用語集</h1>
+        <p class="text-lg text-gray-500" style="line-height: 1.6;">データ分析と機械学習でよく使われる用語の説明</p>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="card-minimal mb-8">
+        <div class="p-4">
+            <div class="flex flex-wrap gap-3 justify-center">
+                <a href="#basic" class="badge badge-primary hover:bg-blue-100 transition-colors">基本用語</a>
+                <a href="#metrics" class="badge badge-primary hover:bg-blue-100 transition-colors">評価指標</a>
+                <a href="#models" class="badge badge-primary hover:bg-blue-100 transition-colors">モデル</a>
+                <a href="#preprocessing" class="badge badge-primary hover:bg-blue-100 transition-colors">前処理</a>
+                <a href="#importance" class="badge badge-primary hover:bg-blue-100 transition-colors">重要度分析</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basic Terms -->
+    <div id="basic" class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </span>
+            基本用語
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">CSV（シーエスブイ）</h3>
+                    <p class="text-gray-600 mb-3">Comma-Separated Values の略。データをカンマで区切ったテキストファイル形式。Excelなどの表計算ソフトで作成・編集できます。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm font-mono text-gray-700">
+                        例: 名前,年齢,性別<br>田中,25,男<br>佐藤,30,女
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">ターゲット列（目的変数）</h3>
+                    <p class="text-gray-600 mb-3">予測したい値が入っている列のこと。機械学習モデルはこの値を予測するように学習します。</p>
+                    <div class="bg-blue-50 rounded-lg p-3 text-sm text-blue-800">
+                        例: 売上を予測したい場合 → 「売上」列がターゲット列
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">特徴量（説明変数）</h3>
+                    <p class="text-gray-600 mb-3">予測に使用するデータの列のこと。ターゲット列以外のすべての列が特徴量になります。</p>
+                    <div class="bg-blue-50 rounded-lg p-3 text-sm text-blue-800">
+                        例: 売上を予測する場合 → 「広告費」「季節」「価格」などが特徴量
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">分類問題</h3>
+                    <p class="text-gray-600 mb-3">データをカテゴリ（種類）に分ける問題。「はい/いいえ」「A/B/C」などを予測します。</p>
+                    <div class="bg-purple-50 rounded-lg p-3 text-sm text-purple-800">
+                        例: メールがスパムかどうか、顧客が購入するかどうか、画像が何かを識別
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">回帰問題</h3>
+                    <p class="text-gray-600 mb-3">連続した数値を予測する問題。価格、売上、温度などの具体的な数値を予測します。</p>
+                    <div class="bg-green-50 rounded-lg p-3 text-sm text-green-800">
+                        例: 住宅価格の予測、売上金額の予測、来客数の予測
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">EDA（探索的データ分析）</h3>
+                    <p class="text-gray-600">Exploratory Data Analysis の略。データの特徴を理解するために、統計量を計算したりグラフを作成したりすること。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics -->
+    <div id="metrics" class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </span>
+            評価指標（分類）
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">正解率（Accuracy）</h3>
+                        <span class="badge badge-success">0.8以上で良好</span>
+                    </div>
+                    <p class="text-gray-600 mb-3">全体のデータのうち、正しく予測できた割合。1.0（100%）に近いほど良い。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        計算式: 正解数 ÷ 全体数<br>
+                        例: 100件中80件正解 → 正解率 0.8
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">AUC</h3>
+                        <span class="badge badge-success">0.7以上で良好</span>
+                    </div>
+                    <p class="text-gray-600 mb-3">Area Under the Curve の略。分類モデルの総合的な性能を0〜1で表す。ROC曲線の下の面積。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        0.5 = ランダムな予測と同じ<br>
+                        0.7〜0.8 = 良好<br>
+                        0.9以上 = 非常に良い
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">適合率（Precision）</h3>
+                    <p class="text-gray-600 mb-3">「陽性」と予測したもののうち、実際に陽性だった割合。誤検出を減らしたいときに重視。</p>
+                    <div class="bg-orange-50 rounded-lg p-3 text-sm text-orange-800">
+                        重視する場面: スパムメールの誤検出を防ぎたい、正常な取引を誤ってブロックしたくない
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">再現率（Recall）</h3>
+                    <p class="text-gray-600 mb-3">実際に陽性のもののうち、正しく陽性と予測できた割合。見逃しを減らしたいときに重視。</p>
+                    <div class="bg-orange-50 rounded-lg p-3 text-sm text-orange-800">
+                        重視する場面: 病気の見逃しを防ぎたい、不正取引を見逃したくない
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">F1スコア</h3>
+                        <span class="badge badge-success">0.7以上で良好</span>
+                    </div>
+                    <p class="text-gray-600">適合率と再現率のバランスを取った指標。両方を同時に高めたいときに使用。</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 mt-12 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+            </span>
+            評価指標（回帰）
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">RMSE</h3>
+                    <p class="text-gray-600 mb-3">Root Mean Squared Error の略。予測誤差の大きさを示す。0に近いほど良い。大きな誤差に敏感。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        単位: ターゲット列と同じ（例: 売上予測ならRMSE=1000は「平均1000円ずれる」意味）
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">MAE</h3>
+                    <p class="text-gray-600 mb-3">Mean Absolute Error の略。平均的な予測誤差。0に近いほど良い。外れ値の影響を受けにくい。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        単位: ターゲット列と同じ（例: MAE=500は「平均500ずれる」意味）
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">R²スコア（決定係数）</h3>
+                        <span class="badge badge-success">0.7以上で良好</span>
+                    </div>
+                    <p class="text-gray-600 mb-3">予測がどれだけデータの変動を説明できているか。1に近いほど良い。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        0.0 = 予測が全く当たっていない<br>
+                        0.7 = データの70%を説明できている<br>
+                        1.0 = 完璧な予測
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Models -->
+    <div id="models" class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </span>
+            モデル
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">ランダムフォレスト</h3>
+                    <p class="text-gray-600">複数の決定木を組み合わせたモデル。高い精度と安定性を持ち、過学習しにくい。多くの場面で良い結果を出す万能型。</p>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">ロジスティック回帰</h3>
+                    <p class="text-gray-600">分類問題に使用される基本的なモデル。シンプルで解釈しやすく、学習が高速。名前に「回帰」とあるが分類用。</p>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">SVM（サポートベクターマシン）</h3>
+                    <p class="text-gray-600">データを分離する境界を見つけるモデル。高次元データに強く、少ないデータでも良い結果を出せる。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preprocessing -->
+    <div id="preprocessing" class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </span>
+            前処理
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">欠損値（Missing Values）</h3>
+                    <p class="text-gray-600">データ内の空白や未入力の値。機械学習ではこれを埋める（補完する）か、削除する必要があります。</p>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">標準化（Standardization）</h3>
+                    <p class="text-gray-600">データを平均0、標準偏差1になるように変換すること。異なるスケールの特徴量を同じ尺度で比較できるようにします。</p>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">ワンホットエンコーディング</h3>
+                    <p class="text-gray-600 mb-3">カテゴリデータ（文字列）を0と1の数値に変換する方法。機械学習は数値しか扱えないため必要な処理。</p>
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                        例: 「赤」「青」「緑」→ 赤=[1,0,0], 青=[0,1,0], 緑=[0,0,1]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重要度分析 -->
+    <div id="importance" class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+            </span>
+            重要度分析
+        </h2>
+        <div class="space-y-4">
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">重要度分析とは</h3>
+                    <p class="text-gray-600">AIの予測結果を人間が理解できる形で説明する分析手法。「なぜこの予測になったか」「どの要素が重要か」を可視化します。</p>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">順列重要度（Permutation Importance）</h3>
+                    <p class="text-gray-600 mb-3">各特徴量がどれだけ予測に影響しているかを測る方法。特徴量の値をシャッフルして、予測精度の低下を測定します。</p>
+                    <div class="bg-indigo-50 rounded-lg p-3 text-sm text-indigo-800">
+                        重要度が高い特徴量 = シャッフルすると予測精度が大きく下がる
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-minimal">
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">部分依存プロット（PDP）</h3>
+                    <p class="text-gray-600 mb-3">Partial Dependence Plot の略。特定の特徴量が変化したとき、予測値がどう変わるかを可視化したグラフ。</p>
+                    <div class="bg-indigo-50 rounded-lg p-3 text-sm text-indigo-800">
+                        例: 「年齢が上がると購入確率がどう変わるか」を視覚的に確認できる
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="text-center pt-8">
+        <a href="/" class="btn-minimal btn-secondary">
+            ホームに戻る
+        </a>
+    </div>
+</div>
+{% endblock %}
+

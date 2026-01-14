@@ -1,0 +1,535 @@
+{% extends "layout.html" %}
+
+{% block title %}前処理設定 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8 animate-fade-in">
+    <!-- Header Section -->
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">前処理設定</h1>
+        <p class="text-gray-500 mb-2">モデル学習前のデータ加工方法をカスタマイズできます</p>
+        
+        <!-- Help Button -->
+        <button type="button" onclick="openHelpModal()" class="text-primary hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            前処理について詳しく見る
+        </button>
+        
+        <div class="flex items-center justify-center gap-3 mt-4">
+            <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-primary border border-blue-100">
+                {{ '分類' if problem_type == 'classification' else '回帰' }}
+            </span>
+            <span class="text-sm text-gray-400">ターゲット: <strong class="text-gray-700">{{ target_column }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">1</span>
+                <span class="text-green-600 font-medium">アップロード</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-green-500 mx-2"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">2</span>
+                <span class="text-green-600 font-medium">ターゲット</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-green-500 mx-2"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">3</span>
+                <span class="text-green-600 font-medium">EDA</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-primary mx-2"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-medium">4</span>
+                <span class="text-primary font-semibold">前処理設定</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-300 mx-2"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center text-xs font-medium">5</span>
+                <span class="text-gray-400">モデル学習</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Summary -->
+    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">データの概要</h4>
+        <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <p class="text-2xl font-bold text-emerald-600">{{ numeric_count }}</p>
+                <p class="text-xs text-gray-500">数値列</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <p class="text-2xl font-bold text-violet-600">{{ categorical_count }}</p>
+                <p class="text-xs text-gray-500">カテゴリ列</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <p class="text-2xl font-bold text-gray-700">{{ numeric_count + categorical_count }}</p>
+                <p class="text-xs text-gray-500">合計特徴量</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start Card -->
+    <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
+                <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">おすすめ設定を使う</h3>
+                <p class="text-gray-600 mb-4">
+                    多くのデータセットで良い結果が得られる設定です。<br>
+                    <span class="text-primary font-medium">迷ったらこのまま進んでください。</span>
+                </p>
+                <div class="bg-white/60 rounded-lg p-3 mb-4 text-sm">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="text-gray-600">欠損値: 中央値補完</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="text-gray-600">標準化: あり</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="text-gray-600">カテゴリ: ワンホット</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="text-gray-600">上限: 20カテゴリ</span>
+                        </div>
+                    </div>
+                </div>
+                <form action="{{ url_for('preprocessing_settings') }}" method="POST" class="text-center">
+                    <input type="hidden" name="use_default" value="true">
+                    <button type="submit" class="btn btn-primary text-base px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                        おすすめ設定でモデル学習へ
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Settings Form -->
+    <form action="{{ url_for('preprocessing_settings') }}" method="POST" id="settings-form">
+        <input type="hidden" name="use_default" value="false">
+        
+        <!-- Numerical Data Settings -->
+        {% if numeric_count > 0 %}
+        <div class="card border-l-4 border-l-emerald-500 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">数値データの設定</h3>
+                    <p class="text-sm text-gray-500">{{ numeric_count }}列が対象です</p>
+                </div>
+            </div>
+
+            <!-- Numerical Imputer -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        欠損値の補完方法
+                        <span class="text-xs text-gray-400 font-normal">空のセルをどう埋めるか</span>
+                    </span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {% for option in preprocessing_options.numerical_imputer %}
+                    <label class="relative flex flex-col p-4 pr-10 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md {% if option.value == current_config.numerical.imputer %}border-emerald-500 bg-emerald-50{% else %}border-gray-200 hover:border-emerald-300{% endif %}">
+                        <input type="radio" name="num_imputer" value="{{ option.value }}" 
+                               class="sr-only"
+                               {% if option.value == current_config.numerical.imputer %}checked{% endif %}>
+                        <div class="flex items-center gap-2 mb-2 pr-4">
+                            <span class="font-semibold text-gray-900 text-sm">{{ option.label.split('（')[0] }}</span>
+                            {% if 'おすすめ' in option.label %}
+                            <span class="px-2 py-0.5 text-xs bg-emerald-500 text-white rounded-full">推奨</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500">{{ option.description }}</p>
+                        <div class="selection-indicator absolute top-3 right-3 w-5 h-5 rounded-full border-2 {% if option.value == current_config.numerical.imputer %}border-emerald-500 bg-emerald-500{% else %}border-gray-300{% endif %} flex items-center justify-center">
+                            {% if option.value == current_config.numerical.imputer %}
+                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Numerical Scaler -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        スケーリング方法
+                        <span class="text-xs text-gray-400 font-normal">数値の大きさを揃える</span>
+                    </span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for option in preprocessing_options.numerical_scaler %}
+                    <label class="relative flex flex-col p-4 pr-10 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md {% if option.value == current_config.numerical.scaler %}border-emerald-500 bg-emerald-50{% else %}border-gray-200 hover:border-emerald-300{% endif %}">
+                        <input type="radio" name="num_scaler" value="{{ option.value }}"
+                               class="sr-only"
+                               {% if option.value == current_config.numerical.scaler %}checked{% endif %}>
+                        <div class="flex items-center gap-2 mb-2 pr-4">
+                            <span class="font-semibold text-gray-900 text-sm">{{ option.label.split('（')[0] }}</span>
+                            {% if 'おすすめ' in option.label %}
+                            <span class="px-2 py-0.5 text-xs bg-emerald-500 text-white rounded-full">推奨</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500">{{ option.description }}</p>
+                        <div class="selection-indicator absolute top-3 right-3 w-5 h-5 rounded-full border-2 {% if option.value == current_config.numerical.scaler %}border-emerald-500 bg-emerald-500{% else %}border-gray-300{% endif %} flex items-center justify-center">
+                            {% if option.value == current_config.numerical.scaler %}
+                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Categorical Data Settings -->
+        {% if categorical_count > 0 %}
+        <div class="card border-l-4 border-l-violet-500 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">カテゴリデータの設定</h3>
+                    <p class="text-sm text-gray-500">{{ categorical_count }}列が対象です</p>
+                </div>
+            </div>
+
+            <!-- Categorical Imputer -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        欠損値の補完方法
+                        <span class="text-xs text-gray-400 font-normal">空のセルをどう埋めるか</span>
+                    </span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for option in preprocessing_options.categorical_imputer %}
+                    <label class="relative flex flex-col p-4 pr-10 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md {% if option.value == current_config.categorical.imputer %}border-violet-500 bg-violet-50{% else %}border-gray-200 hover:border-violet-300{% endif %}">
+                        <input type="radio" name="cat_imputer" value="{{ option.value }}"
+                               class="sr-only"
+                               {% if option.value == current_config.categorical.imputer %}checked{% endif %}>
+                        <div class="flex items-center gap-2 mb-2 pr-4">
+                            <span class="font-semibold text-gray-900 text-sm">{{ option.label.split('（')[0] }}</span>
+                            {% if 'おすすめ' in option.label %}
+                            <span class="px-2 py-0.5 text-xs bg-violet-500 text-white rounded-full">推奨</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500">{{ option.description }}</p>
+                        <div class="selection-indicator absolute top-3 right-3 w-5 h-5 rounded-full border-2 {% if option.value == current_config.categorical.imputer %}border-violet-500 bg-violet-500{% else %}border-gray-300{% endif %} flex items-center justify-center">
+                            {% if option.value == current_config.categorical.imputer %}
+                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Categorical Encoder -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        エンコーディング方法
+                        <span class="text-xs text-gray-400 font-normal">文字を数値に変換する方法</span>
+                    </span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {% for option in preprocessing_options.categorical_encoder %}
+                    <label class="relative flex flex-col p-4 pr-10 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md {% if option.value == current_config.categorical.encoder %}border-violet-500 bg-violet-50{% else %}border-gray-200 hover:border-violet-300{% endif %}">
+                        <input type="radio" name="cat_encoder" value="{{ option.value }}"
+                               class="sr-only"
+                               {% if option.value == current_config.categorical.encoder %}checked{% endif %}>
+                        <div class="flex items-center gap-2 mb-2 pr-4">
+                            <span class="font-semibold text-gray-900 text-sm">{{ option.label.split('（')[0] }}</span>
+                            {% if 'おすすめ' in option.label %}
+                            <span class="px-2 py-0.5 text-xs bg-violet-500 text-white rounded-full">推奨</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500">{{ option.description }}</p>
+                        <div class="selection-indicator absolute top-3 right-3 w-5 h-5 rounded-full border-2 {% if option.value == current_config.categorical.encoder %}border-violet-500 bg-violet-500{% else %}border-gray-300{% endif %} flex items-center justify-center">
+                            {% if option.value == current_config.categorical.encoder %}
+                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Max Categories Slider -->
+            <div class="bg-gray-50 rounded-xl p-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        カテゴリ数の上限
+                        <span class="text-xs text-gray-400 font-normal">超えると「その他」にまとめる</span>
+                    </span>
+                </label>
+                <div class="flex items-center gap-6">
+                    <input type="range" name="cat_max_categories" 
+                           min="10" max="100" step="5" 
+                           value="{{ current_config.categorical.max_categories }}"
+                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-violet-500"
+                           oninput="document.getElementById('max-cat-value').textContent = this.value">
+                    <div class="text-center">
+                        <span id="max-cat-value" class="text-3xl font-bold text-violet-600">{{ current_config.categorical.max_categories }}</span>
+                        <p class="text-xs text-gray-400">カテゴリ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Exclude Columns Settings -->
+        {% if all_columns %}
+        <div class="card border-l-4 border-l-amber-500 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">除外する列</h3>
+                    <p class="text-sm text-gray-500">ID列など、学習に使用しない列を選択（オプション）</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                {% for col in all_columns %}
+                <label class="flex items-center gap-2 p-2 rounded-lg border border-gray-200 cursor-pointer hover:border-amber-300 hover:bg-amber-50/50 transition-all text-sm">
+                    <input type="checkbox" name="exclude_columns" value="{{ col }}"
+                           class="w-4 h-4 text-amber-500 focus:ring-amber-500 rounded border-gray-300"
+                           {% if col in current_config.exclude_columns %}checked{% endif %}>
+                    <span class="text-gray-700 truncate" title="{{ col }}">{{ col }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <p class="text-xs text-gray-400 mt-3">※ ID列や名前列など、予測に無関係な列を除外すると精度が上がることがあります</p>
+        </div>
+        {% endif %}
+
+        <!-- Submit Button -->
+        <div class="flex justify-center pt-4">
+            <button type="submit" class="btn btn-primary text-base px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                この設定でモデル学習へ
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeHelpModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden pointer-events-auto animate-fade-in">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900">前処理について</h2>
+                <button onclick="closeHelpModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">
+                <!-- What is Preprocessing -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        前処理とは？
+                    </h3>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                        機械学習モデルがデータを正しく理解できるように、データを整える作業です。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="text-emerald-600 text-sm font-bold">1</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">欠損値補完</p>
+                                <p class="text-xs text-gray-500">空のセルを適切な値で埋める</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="text-emerald-600 text-sm font-bold">2</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">スケーリング</p>
+                                <p class="text-xs text-gray-500">数値の大きさを揃える</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="text-violet-600 text-sm font-bold">3</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">エンコーディング</p>
+                                <p class="text-xs text-gray-500">文字を数値に変換</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        ポイント
+                    </h3>
+                    <ul class="text-sm text-gray-600 space-y-3">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>迷ったら<strong>おすすめ設定</strong>で大丈夫です</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>結果を見て設定を変更し、再実行もできます</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>ID列や名前列は除外すると精度が上がることが多いです</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Warning -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        注意
+                    </h3>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>カテゴリ数が多いと処理時間が長くなります</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>順序エンコードは順序があるデータ向けです（低/中/高など）</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>頻度エンコードはカテゴリ数が50以上の時に有効です</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Modal functions
+function openHelpModal() {
+    document.getElementById('helpModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});
+
+// Radio button styling on selection
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const groupName = this.name;
+        const colorClass = groupName.startsWith('num_') ? 'emerald' : 'violet';
+        
+        // Remove highlight from all options in the same group
+        document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+            const label = r.closest('label');
+            label.classList.remove(`border-${colorClass}-500`, `bg-${colorClass}-50`);
+            label.classList.add('border-gray-200');
+            const indicator = label.querySelector('.selection-indicator');
+            if (indicator) {
+                indicator.classList.remove(`border-${colorClass}-500`, `bg-${colorClass}-500`);
+                indicator.classList.add('border-gray-300');
+                indicator.innerHTML = '';
+            }
+        });
+        
+        // Add highlight to selected option
+        const label = this.closest('label');
+        label.classList.remove('border-gray-200');
+        label.classList.add(`border-${colorClass}-500`, `bg-${colorClass}-50`);
+        const indicator = label.querySelector('.selection-indicator');
+        if (indicator) {
+            indicator.classList.remove('border-gray-300');
+            indicator.classList.add(`border-${colorClass}-500`, `bg-${colorClass}-500`);
+            indicator.innerHTML = '<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+        }
+    });
+});
+</script>
+{% endblock %}

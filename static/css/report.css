@@ -1,0 +1,122 @@
+/* PDFレポート用スタイル */
+
+@page {
+    size: A4;
+    margin: 2cm;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    font-size: 11pt;
+}
+
+h1 {
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 10px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 24pt;
+    page-break-after: avoid;
+}
+
+h2 {
+    color: #764ba2;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 18pt;
+    page-break-after: avoid;
+}
+
+h3 {
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 14pt;
+    page-break-after: avoid;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    page-break-inside: avoid;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 10pt;
+}
+
+th {
+    background-color: #667eea;
+    color: white;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+ul, ol {
+    margin: 10px 0;
+    padding-left: 30px;
+}
+
+li {
+    margin: 5px 0;
+}
+
+p {
+    margin: 10px 0;
+    text-align: justify;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+    margin: 15px 0;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+.no-break {
+    page-break-inside: avoid;
+}
+
+/* 表紙用スタイル */
+.cover-page {
+    text-align: center;
+    padding-top: 200px;
+}
+
+.cover-title {
+    font-size: 48pt;
+    color: #667eea;
+    margin-bottom: 30px;
+}
+
+.cover-subtitle {
+    font-size: 32pt;
+    color: #764ba2;
+    margin-bottom: 50px;
+}
+
+.cover-info {
+    font-size: 18pt;
+    line-height: 2;
+}
+
+/* セクション区切り */
+.section {
+    margin-bottom: 30px;
+    page-break-inside: avoid;
+}
+

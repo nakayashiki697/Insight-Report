@@ -1,0 +1,212 @@
+{% extends "layout.html" %}
+
+{% block title %}重要度分析結果 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 animate-fade-in">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">重要度分析</h1>
+            <p class="text-gray-500 mt-1">モデルがどのように予測を行うかを理解します。</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="openHelpModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                重要度の見方
+            </button>
+            <span class="px-3 py-1 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                最良モデル: {{ model_results.best_model_name }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Top 3 Features (Highlight Cards) -->
+    {% if xai_results.top_features and xai_results.top_importances %}
+    <div>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">最も重要な特徴量（トップ3）</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {% for feature in xai_results.top_features %}
+            {% set rank = loop.index %}
+            {% set importance = xai_results.top_importances[loop.index0] %}
+            {% set max_importance = xai_results.top_importances[0] %}
+            {% set percentage = (importance / max_importance * 100) if max_importance > 0 else 0 %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 {% if rank == 1 %}border-2 border-purple-200{% endif %}">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-bold {% if rank == 1 %}bg-purple-100 text-purple-700{% elif rank == 2 %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ rank }}位
+                    </span>
+                    {% if rank == 1 %}
+                    <span class="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+                        最重要
+                    </span>
+                    {% endif %}
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 break-words">{{ feature }}</h3>
+                <div class="mb-3">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-bold text-gray-900">{{ "%.4f"|format(importance) }}</span>
+                        <span class="text-sm text-gray-500">重要度</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="h-2 rounded-full {% if rank == 1 %}bg-purple-500{% elif rank == 2 %}bg-blue-500{% else %}bg-gray-400{% endif %}" 
+                         style="width: {{ percentage }}%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">最大重要度の{{ "%.1f"|format(percentage) }}%</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Features List -->
+    {% if xai_results.all_features and xai_results.all_importances %}
+    <div>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">全特徴量の重要度</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">順位</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">特徴量名</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">重要度</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">相対重要度</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% set max_importance = xai_results.all_importances[0] if xai_results.all_importances else 1 %}
+                        {% for feature in xai_results.all_features %}
+                        {% set rank = loop.index %}
+                        {% set importance = xai_results.all_importances[loop.index0] %}
+                        {% set percentage = (importance / max_importance * 100) if max_importance > 0 else 0 %}
+                        <tr class="hover:bg-gray-50 transition-colors {% if rank <= 3 %}bg-purple-50{% endif %}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 rounded text-sm font-medium {% if rank == 1 %}bg-purple-100 text-purple-700{% elif rank == 2 %}bg-blue-100 text-blue-700{% elif rank == 3 %}bg-gray-100 text-gray-700{% else %}bg-white text-gray-600{% endif %}">
+                                    {{ rank }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900 break-words">{{ feature }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <span class="text-sm font-semibold text-gray-900">{{ "%.4f"|format(importance) }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div class="h-2 rounded-full {% if rank == 1 %}bg-purple-500{% elif rank == 2 %}bg-blue-500{% elif rank == 3 %}bg-gray-400{% else %}bg-gray-300{% endif %}" 
+                                             style="width: {{ percentage }}%"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-500 w-12 text-right">{{ "%.0f"|format(percentage) }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Final Action: Generate Report -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <h3 class="text-2xl font-semibold text-gray-900 mb-3">レポートを生成しますか？</h3>
+        <p class="text-gray-500 mb-8">すべての分析結果を含む包括的なPDFレポートを作成します。</p>
+        <a href="/generate-report" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-dark transition-colors shadow-lg hover:shadow-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            PDFレポートを生成
+        </a>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-gray-900">重要度の見方</h3>
+            <button onclick="closeHelpModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="px-6 py-6 space-y-6">
+            <div>
+                <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    重要度とは？
+                </h4>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    重要度は、各特徴量（変数）がモデルの予測にどれだけ影響を与えるかを示す数値です。
+                    数値が大きいほど、その特徴量が予測に重要であることを意味します。
+                </p>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                <h4 class="text-base font-semibold text-blue-900 mb-2">重要なポイント</h4>
+                <ul class="text-sm text-blue-800 space-y-2">
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-0.5">•</span>
+                        <span><strong>数値が大きい</strong>ほど予測に重要</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-0.5">•</span>
+                        <span><strong>1位の特徴量</strong>は最も予測に影響する変数</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-0.5">•</span>
+                        <span><strong>0に近い特徴量</strong>は予測にほとんど影響しない</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-0.5">•</span>
+                        <span><strong>相対重要度</strong>は最大重要度に対する割合を示します</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">使い方</h4>
+                <ol class="text-gray-600 leading-relaxed space-y-2 list-decimal list-inside">
+                    <li>トップ3の特徴量を確認して、最も重要な変数を把握します</li>
+                    <li>全特徴量のリストで、各変数の重要度を比較します</li>
+                    <li>重要度が低い特徴量は、モデルの予測にあまり影響しないことがわかります</li>
+                </ol>
+            </div>
+        </div>
+        <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+            <button onclick="closeHelpModal()" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors">
+                閉じる
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openHelpModal() {
+    document.getElementById('helpModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// ESCキーでモーダルを閉じる
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});
+</script>
+{% endblock %}

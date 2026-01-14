@@ -1,0 +1,20 @@
+# Docker ignore file
+__pycache__/
+*.py[cod]
+*$py.class
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+!README.md
+docs/
+test_*.py
+tests/
+*.log
+.env*
+uploads/*
+outputs/*
+temp/*
+uv.lock
+

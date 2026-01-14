@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+
+{% block title %}Insight Report{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="max-w-5xl mx-auto text-center" style="padding: 120px 0 160px;">
+    <h1 class="text-6xl font-bold text-gray-900 mb-6" style="letter-spacing: -0.03em; line-height: 1.1;">
+        Insight Report
+    </h1>
+    <p class="text-xl text-gray-600 mb-12" style="line-height: 1.7; max-width: 600px; margin-left: auto; margin-right: auto;">
+        データ分析レポート自動生成ツール
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a href="/upload" class="btn-minimal btn-primary text-lg px-8 py-4">
+            使い始める
+        </a>
+        <a href="#features" class="btn-minimal btn-secondary text-lg px-8 py-4">
+            機能を見る
+        </a>
+    </div>
+</div>
+
+<!-- Target Users Section -->
+<section class="max-w-6xl mx-auto" style="padding: 0 24px 120px;">
+    <div class="text-center mb-20">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">このツールは誰のためのもの？</h2>
+        <p class="text-gray-500 text-lg" style="line-height: 1.6;">コードが書けない人でも、データ分析と機械学習を簡単に使えます</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <!-- Target 1: Students -->
+        <div class="card-minimal">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">📚 データ分析初心者の学生</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• 機械学習を学び始めた学生</li>
+                <li>• 卒業研究でデータ分析が必要な学生</li>
+                <li>• 統計・データサイエンスの授業でレポート作成が必要な学生</li>
+            </ul>
+        </div>
+
+        <!-- Target 2: Business Users -->
+        <div class="card-minimal">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">💼 非エンジニアのビジネス担当者</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• マーケティング担当者（顧客分析、売上予測）</li>
+                <li>• 営業担当者（成約予測、顧客セグメンテーション）</li>
+                <li>• 人事担当者（採用分析、離職予測）</li>
+            </ul>
+        </div>
+
+        <!-- Target 3: Small Businesses -->
+        <div class="card-minimal">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">🏢 小規模企業・スタートアップ</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• データ分析のリソースがない企業</li>
+                <li>• 外部委託の予算がない企業</li>
+                <li>• 社内データを簡単に分析したい担当者</li>
+            </ul>
+        </div>
+
+    </div>
+</section>
+
+<!-- Use Cases Section -->
+<section class="max-w-6xl mx-auto" style="padding: 0 24px 120px;">
+    <div class="text-center mb-20">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">使いどころ</h2>
+        <p class="text-gray-500 text-lg" style="line-height: 1.6;">様々なシーンで活用できます</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Use Case 1: Business -->
+        <div class="card-minimal">
+            <div class="w-12 h-12 mb-4 rounded-lg bg-blue-50 flex items-center justify-center">
+                <span class="text-2xl">💼</span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">ビジネス分析</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• 売上予測（過去の売上データから将来を予測）</li>
+                <li>• 顧客分析（離脱リスクの予測）</li>
+                <li>• マーケティング効果測定</li>
+                <li>• 需要予測（在庫管理のため）</li>
+            </ul>
+        </div>
+
+        <!-- Use Case 2: Education -->
+        <div class="card-minimal">
+            <div class="w-12 h-12 mb-4 rounded-lg bg-purple-50 flex items-center justify-center">
+                <span class="text-2xl">📚</span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">教育・学習</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• 機械学習の学習（実際のデータで体験）</li>
+                <li>• データサイエンスの実践</li>
+                <li>• レポート作成（分析結果を自動でレポート化）</li>
+            </ul>
+        </div>
+
+        <!-- Use Case 3: Prototyping -->
+        <div class="card-minimal">
+            <div class="w-12 h-12 mb-4 rounded-lg bg-orange-50 flex items-center justify-center">
+                <span class="text-2xl">🚀</span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">小規模プロジェクト</h3>
+            <ul class="text-gray-600 space-y-2 text-sm" style="line-height: 1.7;">
+                <li>• プロトタイプ作成（本格的な分析の前に試す）</li>
+                <li>• データ探索（データの特徴を素早く把握）</li>
+                <li>• 意思決定の補助（データに基づいた判断）</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="max-w-6xl mx-auto" style="padding: 0 24px 120px;">
+    <div class="text-center mb-20">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">主な機能</h2>
+        <p class="text-gray-500 text-lg" style="line-height: 1.6;">シンプルな操作で、高度なデータ分析とモデル解釈を実現</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1: EDA -->
+        <div class="card-minimal text-center" style="padding: 48px 32px;">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">自動EDA</h3>
+            <p class="text-gray-600" style="line-height: 1.7;">データの理解と可視化を自動で実行し、データの特性を素早く把握</p>
+        </div>
+
+        <!-- Feature 2: AutoML -->
+        <div class="card-minimal text-center" style="padding: 48px 32px;">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-purple-50 flex items-center justify-center">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">AutoML</h3>
+            <p class="text-gray-600" style="line-height: 1.7;">複数の機械学習モデルを自動学習し、最良のモデルを選択</p>
+        </div>
+
+        <!-- Feature 3: 重要度分析 -->
+        <div class="card-minimal text-center" style="padding: 48px 32px;">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-50 flex items-center justify-center">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">重要度分析</h3>
+            <p class="text-gray-600" style="line-height: 1.7;">どの要素が予測に重要かを可視化し、モデルの判断理由を説明</p>
+        </div>
+    </div>
+</section>
+
+<!-- Process Section -->
+<section class="max-w-5xl mx-auto" style="padding: 0 24px 120px;">
+    <div class="text-center mb-20">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">使い方</h2>
+        <p class="text-gray-500 text-lg" style="line-height: 1.6;">3ステップで完了するシンプルなワークフロー</p>
+    </div>
+
+    <div class="space-y-12">
+        <!-- Step 1 -->
+        <div class="flex items-start gap-8">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-lg">
+                    1
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">データをアップロード</h3>
+                <p class="text-gray-600" style="line-height: 1.7;">CSVファイルをアップロードするだけで、自動的にデータ分析が開始されます</p>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex items-start gap-8">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-lg">
+                    2
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">自動分析とモデル学習</h3>
+                <p class="text-gray-600" style="line-height: 1.7;">EDA、前処理、複数モデルの学習と評価が自動で実行されます</p>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex items-start gap-8">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-lg">
+                    3
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">レポートを生成</h3>
+                <p class="text-gray-600" style="line-height: 1.7;">分析結果と重要度分析による説明を含む包括的なPDFレポートを生成</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="max-w-4xl mx-auto text-center" style="padding: 0 24px 120px;">
+    <div class="card-minimal" style="padding: 64px 48px;">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">今すぐ始める</h2>
+        <p class="text-lg text-gray-600 mb-8" style="line-height: 1.7;">データ分析を自動化し、モデルの説明可能性を高めましょう</p>
+        <a href="/upload" class="btn-minimal btn-primary text-lg px-10 py-4 inline-block">
+            始める
+        </a>
+    </div>
+</section>
+{% endblock %}

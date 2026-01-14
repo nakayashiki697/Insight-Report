@@ -1,0 +1,348 @@
+{% extends "layout.html" %}
+
+{% block title %}CSVファイルアップロード - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto section-spacing">
+    <!-- Progress Stepper -->
+    <div class="progress-stepper">
+        <!-- Step 1: Upload (Active) -->
+        <div class="progress-step">
+            <div class="step-circle active">1</div>
+            <span class="step-label active">アップロード</span>
+        </div>
+
+        <!-- Step 2: EDA -->
+        <div class="progress-step">
+            <div class="step-circle inactive">2</div>
+            <span class="step-label inactive">EDA</span>
+        </div>
+
+        <!-- Step 3: Modeling -->
+        <div class="progress-step">
+            <div class="step-circle inactive">3</div>
+            <span class="step-label inactive">モデル学習</span>
+        </div>
+
+        <!-- Step 4: Report -->
+        <div class="progress-step">
+            <div class="step-circle inactive">4</div>
+            <span class="step-label inactive">レポート</span>
+        </div>
+    </div>
+
+    <!-- Main Upload Card -->
+    <div class="card-minimal">
+        <div class="text-center" style="padding: 48px 32px;">
+            <h1 class="text-3xl font-bold text-gray-900 mb-3" style="letter-spacing: -0.02em;">データセットをアップロード</h1>
+            <p class="text-base text-gray-500 mb-2" style="line-height: 1.6;">CSVファイルをアップロードして自動分析を開始します。</p>
+            
+            <!-- Help Button -->
+            <button type="button" onclick="openHelpModal()" class="text-primary hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1 mb-8 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                CSVファイルについて詳しく見る
+            </button>
+
+            <form method="POST" enctype="multipart/form-data" id="uploadForm" class="relative">
+                <input type="file" name="file" id="fileInput" accept=".csv" class="hidden" required>
+
+                <!-- Drag & Drop Zone -->
+                <label for="fileInput" id="dropZone" class="drop-zone block w-full">
+                    <div class="flex flex-col items-center justify-center py-16 px-8">
+                        <div class="w-20 h-20 mb-6 rounded-full bg-blue-50 flex items-center justify-center transition-colors">
+                            <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                        </div>
+                        <p class="mb-2 text-xl font-medium text-gray-700" style="line-height: 1.5;">
+                            <span class="text-primary">クリックしてアップロード</span> または ドラッグ&ドロップ
+                        </p>
+                        <p class="text-sm text-gray-500">CSVファイル（最大100MB）</p>
+                    </div>
+                </label>
+
+                <!-- File Info (Hidden by default) -->
+                <div id="fileInfo"
+                    class="hidden mt-6 p-6 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between animate-fade-in">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm text-primary">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p id="fileName" class="font-medium text-gray-900 truncate max-w-xs mb-1"></p>
+                            <p id="fileSize" class="text-xs text-gray-500"></p>
+                        </div>
+                    </div>
+                    <button type="button" id="clearFile" class="text-gray-400 hover:text-red-500 transition-colors p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-10">
+                    <button type="submit" id="submitBtn" disabled class="btn-minimal btn-primary">
+                        <span id="btnText">分析を開始</span>
+                        <span id="spinner" class="hidden ml-2 spinner"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-center gap-8 text-sm text-gray-500">
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                最大100,000行
+            </span>
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                最大100列
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeHelpModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden pointer-events-auto animate-fade-in">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900">CSVファイルについて</h2>
+                <button onclick="closeHelpModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">
+                <!-- CSVとは -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        CSVファイルとは？
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        CSV（Comma-Separated Values）は、データをカンマで区切ったテキストファイルです。Excelなどの表計算ソフトで作成・編集できます。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 text-xs font-mono text-gray-700">
+                        <div class="text-gray-500 mb-2">例: sales_data.csv</div>
+                        <div>商品名,価格,売上個数</div>
+                        <div>りんご,100,50</div>
+                        <div>みかん,80,120</div>
+                        <div>バナナ,150,30</div>
+                    </div>
+                </div>
+
+                <!-- 必要な形式 -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        必要な形式
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                            <span><strong>1行目がヘッダー</strong>（列名）になっていること</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                            <span><strong>カンマ区切り</strong>のテキストファイル（.csv）</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                            <span><strong>予測したい列</strong>が含まれていること</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">4</span>
+                            <span>文字コードは<strong>UTF-8</strong>を推奨</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- よくある問題 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        よくある問題と解決方法
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Excelからの変換 -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-gray-800 mb-2">Excelファイルしかない場合</h4>
+                            <ol class="text-sm text-gray-600 space-y-1 ml-4 list-decimal">
+                                <li>Excelでファイルを開く</li>
+                                <li>「ファイル」→「名前を付けて保存」</li>
+                                <li>ファイルの種類で「CSV UTF-8」を選択</li>
+                                <li>保存して完了</li>
+                            </ol>
+                        </div>
+
+                        <!-- 文字化け -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-gray-800 mb-2">文字化けする場合</h4>
+                            <p class="text-sm text-gray-600">
+                                文字コードがUTF-8でない可能性があります。Excelで「CSV UTF-8」形式で保存し直してください。
+                            </p>
+                        </div>
+
+                        <!-- エラーが出る場合 -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-gray-800 mb-2">エラーが出る場合</h4>
+                            <ul class="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                                <li>空の行や列がないか確認</li>
+                                <li>列名が重複していないか確認</li>
+                                <li>特殊文字（改行など）が含まれていないか確認</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Modal functions
+    function openHelpModal() {
+        document.getElementById('helpModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeHelpModal() {
+        document.getElementById('helpModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeHelpModal();
+        }
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const clearFile = document.getElementById('clearFile');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    // Drag & Drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-primary', 'bg-blue-50');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-primary', 'bg-blue-50');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    fileInput.addEventListener('change', function () {
+        handleFiles(this.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                updateFileInfo(file);
+                // Update input if dropped
+                if (fileInput.files !== files) {
+                    fileInput.files = files;
+                }
+            } else {
+                alert('CSVファイルをアップロードしてください。');
+            }
+        }
+    }
+
+    function updateFileInfo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatSize(file.size);
+        fileInfo.classList.remove('hidden');
+        dropZone.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+
+    clearFile.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        submitBtn.disabled = true;
+    });
+
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 バイト';
+        const k = 1024;
+        const sizes = ['バイト', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    uploadForm.addEventListener('submit', () => {
+        submitBtn.disabled = true;
+        btnText.textContent = 'アップロード中...';
+        spinner.classList.remove('hidden');
+    });
+</script>
+{% endblock %}

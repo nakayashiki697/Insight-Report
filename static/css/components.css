@@ -1,0 +1,349 @@
+/* Phase 6.5: UI/UX改善 - コンポーネントスタイル */
+
+/* プログレスステッパー（ミニマル） */
+.progress-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin-bottom: 64px;
+    padding: 0 32px;
+}
+
+.progress-stepper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-gray-200);
+    z-index: 0;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-gray-50);
+    padding: 0 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.step-circle.active {
+    background: var(--color-blue-500);
+    color: var(--color-white);
+    box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+}
+
+.step-circle.inactive {
+    background: var(--color-gray-200);
+    color: var(--color-gray-400);
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.step-label.active {
+    color: var(--color-blue-500);
+}
+
+.step-label.inactive {
+    color: var(--color-gray-400);
+}
+
+/* データテーブル（ミニマル） */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.data-table thead {
+    background: var(--color-gray-50);
+}
+
+.data-table th {
+    padding: 16px 24px;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.data-table td {
+    padding: 16px 24px;
+    font-size: 0.9375rem;
+    color: var(--color-gray-900);
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.data-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* バッジ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-primary {
+    background: var(--color-blue-50);
+    color: var(--color-blue-700);
+    border: 1px solid var(--color-blue-100);
+}
+
+.badge-success {
+    background: #D1FAE5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+}
+
+.badge-warning {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+}
+
+/* 特徴量カード（XAI用） */
+.feature-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-blue-500);
+    transform: translateX(4px);
+}
+
+.feature-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--color-blue-50);
+    color: var(--color-blue-700);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-right: 12px;
+}
+
+.feature-name {
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: 4px;
+}
+
+.feature-importance {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+/* ローディングスピナー */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-gray-200);
+    border-top-color: var(--color-blue-500);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 空の状態 */
+.empty-state {
+    text-align: center;
+    padding: 64px 32px;
+    color: var(--color-gray-500);
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 8px;
+}
+
+.empty-state-description {
+    font-size: 0.9375rem;
+    color: var(--color-gray-500);
+}
+
+/* ツールチップ */
+.tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 16px;
+    background: var(--color-gray-900);
+    color: var(--color-white);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: 8px;
+    white-space: normal;
+    min-width: 200px;
+    max-width: 280px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    margin-bottom: 8px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tooltip:hover .tooltip-content {
+    opacity: 1;
+}
+
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--color-gray-900);
+}
+
+/* ヘルプアイコン */
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-gray-200);
+    color: var(--color-gray-500);
+    font-size: 0.625rem;
+    font-weight: 700;
+    cursor: help;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+}
+
+.help-icon:hover {
+    background: var(--color-blue-100);
+    color: var(--color-blue-600);
+}
+
+/* ツールチップ付きメトリクスラベル */
+.metric-label-with-help {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* グラフラッパー */
+.graph-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 24px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.graph-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+/* 2カラムレイアウト */
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 32px;
+}
+
+@media (max-width: 1024px) {
+    .two-column-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* サイドバー */
+.sidebar {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+/* メインコンテンツエリア */
+.main-content {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 32px;
+}
+

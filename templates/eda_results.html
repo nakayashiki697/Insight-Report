@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}EDA結果 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">探索的データ分析</h1>
+            <p class="text-gray-500 mt-1">データセットの自動インサイトと統計情報</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-primary border border-blue-100">
+                {{ '分類' if problem_type == 'classification' else '回帰' }}
+            </span>
+            <span class="text-sm text-gray-400">ターゲット: <strong class="text-gray-700">{{ target_column
+                    }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div class="metric-card">
+            <p class="metric-label">総行数</p>
+            <p class="metric-value">{{ eda_results.summary_statistics.total_rows | int }}</p>
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">総列数</p>
+            <p class="metric-value">{{ eda_results.summary_statistics.total_columns }}</p>
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">数値列</p>
+            <p class="metric-value">{{ eda_results.summary_statistics.numeric_columns }}</p>
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">カテゴリ列</p>
+            <p class="metric-value">{{ eda_results.summary_statistics.categorical_columns }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="two-column-layout">
+
+        <!-- Left Column: Insights & Missing Values (Sidebar) -->
+        <div class="sidebar">
+            <!-- Automated Insights -->
+            <div class="mb-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    主要なインサイト
+                </h3>
+                <div class="space-y-3">
+                    <div class="insight-card">
+                        <p class="text-sm text-gray-700" style="line-height: 1.6;">{{ eda_results.insights.summary }}</p>
+                    </div>
+
+                    {% if eda_results.insights.class_imbalance %}
+                    <div class="insight-card warning">
+                        <p class="text-xs font-bold text-orange-700 uppercase mb-1.5">クラス不均衡</p>
+                        <p class="text-sm text-gray-700" style="line-height: 1.6;">{{ eda_results.insights.class_imbalance.message }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if eda_results.insights.strong_correlations %}
+                    <div class="insight-card error">
+                        <p class="text-xs font-bold text-red-700 uppercase mb-1.5">高い相関</p>
+                        <ul class="text-sm text-gray-700 space-y-1.5" style="line-height: 1.6;">
+                            {% for corr in eda_results.insights.strong_correlations %}
+                            <li>{{ corr.column1 }} & {{ corr.column2 }}: <strong>{{ "%.2f"|format(corr.correlation)
+                                    }}</strong></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Missing Values Summary -->
+            {% if eda_results.missing_info.top_missing_columns %}
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 mb-4">欠損値</h3>
+                <div class="space-y-3">
+                    {% for item in eda_results.missing_info.top_missing_columns %}
+                    <div>
+                        <div class="flex justify-between text-sm mb-1.5">
+                            <span class="font-medium text-gray-700">{{ item.column }}</span>
+                            <span class="text-gray-500">{{ "%.1f"|format(item.null_ratio * 100) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-1.5">
+                            <div class="bg-orange-400 h-1.5 rounded-full" style="width: {{ item.null_ratio * 100 }}%">
+                                </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Charts & Statistics (Main Content) -->
+        <div class="main-content">
+
+            <!-- Basic Statistics Table -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">記述統計</h3>
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Type</th>
+                                <th style="text-align: right;">Mean</th>
+                                <th style="text-align: right;">Median</th>
+                                <th style="text-align: right;">Std</th>
+                                <th style="text-align: right;">Missing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col, stats in eda_results.basic_statistics.items() %}
+                            <tr>
+                                <td style="font-weight: 500;">{{ col }}</td>
+                                <td>
+                                    <span class="badge {{ 'badge-primary' if stats.is_numeric else 'badge-warning' }}">
+                                        {{ 'Num' if stats.is_numeric else 'Cat' }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">{{ "%.2f"|format(stats.mean) if stats.mean is not none
+                                    else '-' }}</td>
+                                <td style="text-align: right;">{{ "%.2f"|format(stats.median) if stats.median is not
+                                    none else '-' }}</td>
+                                <td style="text-align: right;">{{ "%.2f"|format(stats.std) if stats.std is not none
+                                    else '-' }}</td>
+                                <td style="text-align: right;">
+                                    {% if stats.null_count > 0 %}
+                                    <span style="color: #F59E0B; font-weight: 500;">{{ stats.null_count }}</span>
+                                    {% else %}
+                                    <span style="color: #D1D5DB;">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Visualizations Grid -->
+            <div class="space-y-8">
+                <!-- Missing Heatmap -->
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">欠損値ヒートマップ</h3>
+                    <img src="{{ eda_results.missing_heatmap_path }}" class="w-full rounded-lg" alt="Missing Heatmap">
+                </div>
+
+                <!-- Correlation Heatmap -->
+                {% if eda_results.correlation_results.heatmap_path %}
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">相関行列</h3>
+                    <img src="{{ eda_results.correlation_results.heatmap_path }}" class="w-full rounded-lg"
+                        alt="Correlation Heatmap">
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="flex justify-center pt-8">
+        <a href="{{ url_for('preprocessing_settings') }}" class="btn-minimal btn-primary inline-flex items-center gap-2">
+            前処理設定へ進む
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+        </a>
+    </div>
+
+    <!-- Spacer for fixed footer -->
+    <div class="h-20"></div>
+</div>
+{% endblock %}

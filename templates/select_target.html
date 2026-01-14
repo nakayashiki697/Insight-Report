@@ -1,0 +1,294 @@
+{% extends "layout.html" %}
+
+{% block title %}ターゲット列選択 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto section-spacing">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4" style="letter-spacing: -0.02em;">ターゲット列を選択</h1>
+        <p class="text-lg text-gray-500 mb-2" style="line-height: 1.6;">予測したい列を選択してください。</p>
+        
+        <!-- Help Button -->
+        <button type="button" onclick="openHelpModal()" class="text-primary hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            ターゲット列の選び方を見る
+        </button>
+    </div>
+
+    <!-- Problem Type Detection -->
+    {% if problem_type %}
+    <div class="card-minimal mb-8 text-center p-4">
+        <p class="text-sm text-gray-500 mb-2">検出された問題種別</p>
+        <span class="badge badge-primary text-base px-4 py-2">
+            {{ '分類' if problem_type == 'classification' else '回帰' }}
+        </span>
+        <p class="text-xs text-gray-400 mt-2">
+            {% if problem_type == 'classification' %}
+            カテゴリ（種類）を予測する問題です
+            {% else %}
+            数値を予測する問題です
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Column Selection -->
+    <form method="POST" action="/select-target">
+        <div class="card-minimal">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">利用可能な列</h3>
+            {% if column_info %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for column_name, info in column_info.items() %}
+                <label class="column-select-card block">
+                    <input type="radio" name="target_column" value="{{ column_name }}" required 
+                           class="hidden column-radio">
+                    <div class="column-card p-6 border-2 border-gray-200 rounded-lg cursor-pointer transition-all 
+                                hover:border-gray-300 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 mb-2">{{ column_name }}</p>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    {% if info.is_numeric %}
+                                    <span class="badge badge-primary">数値</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">カテゴリ</span>
+                                    {% endif %}
+                                    <span class="text-xs text-gray-500">ユニーク値: {{ info.unique_count }}</span>
+                                    {% if info.null_count > 0 %}
+                                    <span class="text-xs text-orange-600">欠損: {{ info.null_count }} ({{ "%.1f"|format(info.null_ratio * 100) }}%)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="column-radio-indicator w-6 h-6 rounded-full border-2 border-gray-300 ml-4
+                                        flex items-center justify-center transition-all flex-shrink-0">
+                                <svg class="column-check-icon w-4 h-4 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-500">列情報が取得できませんでした。</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center mt-8">
+            <button type="submit" class="btn-minimal btn-primary">
+                EDAに進む
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeHelpModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden pointer-events-auto animate-fade-in">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900">ターゲット列の選び方</h2>
+                <button onclick="closeHelpModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">
+                <!-- ターゲット列とは？ -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ターゲット列とは？
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        <strong>ターゲット列</strong>とは、<span class="text-primary font-medium">予測したい値が入っている列</span>のことです。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4 text-sm text-gray-700">
+                        <p class="font-medium text-gray-800 mb-2">例えば...</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary">•</span>
+                                <span>売上を予測したい → 「売上」列を選択</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary">•</span>
+                                <span>合否を予測したい → 「合否」列を選択</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary">•</span>
+                                <span>価格を予測したい → 「価格」列を選択</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 分類と回帰の違い -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        分類と回帰の違い
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-purple-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-purple-800 mb-2">分類（カテゴリを予測）</h4>
+                            <p class="text-xs text-purple-700">
+                                「はい/いいえ」「A/B/C」など、<strong>カテゴリ</strong>を予測します。
+                            </p>
+                            <p class="text-xs text-purple-600 mt-2">
+                                例: 合格/不合格、購入する/しない
+                            </p>
+                        </div>
+                        
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-green-800 mb-2">回帰（数値を予測）</h4>
+                            <p class="text-xs text-green-700">
+                                売上、価格、気温など、<strong>連続した数値</strong>を予測します。
+                            </p>
+                            <p class="text-xs text-green-600 mt-2">
+                                例: 売上金額、住宅価格、来客数
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 選び方のヒント -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        選び方のヒント
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-600 mb-4">
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                            <span>「何を知りたいか」を考える</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                            <span>その情報が入っている列を探す</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                            <span>欠損値が少ない列を選ぶ</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                        <p class="text-xs text-yellow-800">
+                            <strong>注意:</strong> ID列や日付列は通常ターゲットには向きません。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.column-select-card {
+    cursor: pointer;
+}
+
+.column-select-card input:checked ~ .column-card {
+    border-color: var(--color-blue-500);
+    background-color: var(--color-blue-50);
+}
+
+.column-select-card input:checked ~ .column-card .column-radio-indicator {
+    border-color: var(--color-blue-500);
+    background-color: var(--color-blue-500);
+}
+
+.column-select-card input:checked ~ .column-card .column-check-icon {
+    display: block;
+}
+
+.column-select-card:hover .column-card {
+    border-color: var(--color-gray-300);
+}
+
+.column-select-card input:checked ~ .column-card:hover {
+    border-color: var(--color-blue-600);
+}
+</style>
+
+<script>
+// Modal functions
+function openHelpModal() {
+    document.getElementById('helpModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const radioButtons = document.querySelectorAll('.column-radio');
+    
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // すべてのカードの選択状態をリセット
+            document.querySelectorAll('.column-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelectorAll('.column-radio-indicator').forEach(indicator => {
+                indicator.classList.remove('selected');
+            });
+            document.querySelectorAll('.column-check-icon').forEach(icon => {
+                icon.classList.add('hidden');
+            });
+            
+            // 選択されたカードをハイライト
+            if (this.checked) {
+                const card = this.closest('.column-select-card').querySelector('.column-card');
+                const indicator = this.closest('.column-select-card').querySelector('.column-radio-indicator');
+                const checkIcon = this.closest('.column-select-card').querySelector('.column-check-icon');
+                
+                card.classList.add('selected');
+                indicator.classList.add('selected');
+                checkIcon.classList.remove('hidden');
+            }
+        });
+        
+        // カードクリック時にもラジオボタンを選択
+        const card = radio.closest('.column-select-card').querySelector('.column-card');
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('.column-select-card')) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

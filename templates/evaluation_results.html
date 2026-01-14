@@ -1,0 +1,425 @@
+{% extends "layout.html" %}
+
+{% block title %}モデル評価結果 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto section-spacing animate-fade-in">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">モデル評価</h1>
+        <p class="text-lg text-gray-500 mb-2">選択されたモデルのパフォーマンス指標と可視化</p>
+        
+        <!-- Help Button -->
+        <button type="button" onclick="openHelpModal()" class="text-primary hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            指標の見方を見る
+        </button>
+    </div>
+
+    <!-- Analysis Settings -->
+    <div class="card-minimal mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">分析設定</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm text-gray-500 mb-1">ターゲット列</p>
+                <p class="text-base font-medium text-gray-900">{{ target_column }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 mb-1">問題種別</p>
+                <span class="badge badge-primary">
+                    {{ '分類' if problem_type == 'classification' else '回帰' }}
+                </span>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 mb-1">選択モデル</p>
+                <p class="text-base font-medium text-gray-900">{{ model_results.best_model_name }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Metrics -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">パフォーマンス指標</h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {% if problem_type == 'classification' %}
+            <div class="metric-card">
+                <p class="metric-label">正解率</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.accuracy or evaluation_results.a or 0) }}</p>
+            </div>
+            {% if (evaluation_results.roc_auc is not none) or (evaluation_results.auc is not none) %}
+            <div class="metric-card">
+                <p class="metric-label">AUC</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.roc_auc or evaluation_results.auc or 0) }}</p>
+            </div>
+            {% endif %}
+            <div class="metric-card">
+                <p class="metric-label">適合率</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.precision or evaluation_results.p or 0) }}</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">再現率</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.recall or evaluation_results.r or 0) }}</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">F1スコア</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.f1_score or evaluation_results.f or 0) }}</p>
+            </div>
+            {% else %}
+            <div class="metric-card">
+                <p class="metric-label">RMSE</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.rmse or 0) }}</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">MAE</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.mae or 0) }}</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">R²スコア</p>
+                <p class="metric-value">{{ "%.3f"|format(evaluation_results.r2_score or evaluation_results.r2 or 0) }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Visualizations -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-8">可視化</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {% if problem_type == 'classification' %}
+            {% if evaluation_results.roc_plot_path or evaluation_results.roc %}
+            <div class="graph-wrapper">
+                <h3 class="graph-title">ROC曲線</h3>
+                <img src="/temp/{{ evaluation_results.output_dir }}/{{ evaluation_results.roc_plot_path.split('/')[-1] if evaluation_results.roc_plot_path else evaluation_results.roc }}" 
+                     class="w-full rounded-lg" alt="ROC Curve">
+            </div>
+            {% endif %}
+            {% if evaluation_results.cm_plot_path or evaluation_results.cm %}
+            <div class="graph-wrapper">
+                <h3 class="graph-title">混同行列</h3>
+                <img src="/temp/{{ evaluation_results.output_dir }}/{{ evaluation_results.cm_plot_path.split('/')[-1] if evaluation_results.cm_plot_path else evaluation_results.cm }}" 
+                     class="w-full rounded-lg" alt="Confusion Matrix">
+            </div>
+            {% endif %}
+            {% else %}
+            {% if evaluation_results.scatter_plot_path %}
+            <div class="graph-wrapper">
+                <h3 class="graph-title">予測値 vs 実際値</h3>
+                <img src="/temp/{{ evaluation_results.output_dir }}/{{ evaluation_results.scatter_plot_path.split('/')[-1] if evaluation_results.scatter_plot_path else 'scatter_plot.png' }}" 
+                     class="w-full rounded-lg" alt="Scatter Plot">
+            </div>
+            {% endif %}
+            {% if evaluation_results.residual_plot_path %}
+            <div class="graph-wrapper">
+                <h3 class="graph-title">残差プロット</h3>
+                <img src="/temp/{{ evaluation_results.output_dir }}/{{ evaluation_results.residual_plot_path.split('/')[-1] if evaluation_results.residual_plot_path else 'residual_plot.png' }}" 
+                     class="w-full rounded-lg" alt="Residual Plot">
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Evaluation Summary -->
+    {% if evaluation_results.summary or evaluation_results.summary_text %}
+    <div class="card-minimal mb-12">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">評価サマリ</h3>
+        <div class="prose prose-gray max-w-none" style="line-height: 1.8;">
+            <p class="text-gray-700">{{ evaluation_results.summary.summary if evaluation_results.summary else evaluation_results.summary_text }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Improvement Suggestions -->
+    {% if evaluation_results.improvement_suggestions %}
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-8">改善提案</h2>
+        <div class="space-y-4">
+            {% for suggestion in evaluation_results.improvement_suggestions %}
+            <div class="insight-card {{ 'warning' if suggestion.priority == 'high' else 'error' if suggestion.priority == 'medium' else '' }}">
+                <div class="flex items-start justify-between mb-2">
+                    <h4 class="text-base font-semibold text-gray-900">{{ suggestion.title }}</h4>
+                    <span class="badge {{ 'badge-warning' if suggestion.priority == 'high' else 'badge-success' if suggestion.priority == 'low' else 'badge-primary' }}">
+                        {{ '高' if suggestion.priority == 'high' else '中' if suggestion.priority == 'medium' else '低' }}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-500 mb-2"><strong>カテゴリ:</strong> {{ suggestion.category }}</p>
+                <p class="text-sm text-gray-700" style="line-height: 1.6;">{{ suggestion.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+        <a href="/xai-analysis" class="btn-minimal btn-primary text-center">
+            重要度分析に進む
+        </a>
+        <a href="/model-comparison" class="btn-minimal btn-secondary text-center">
+            モデル比較に戻る
+        </a>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeHelpModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden pointer-events-auto animate-fade-in">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900">指標の見方</h2>
+                <button onclick="closeHelpModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">
+                {% if problem_type == 'classification' %}
+                <!-- Classification Metrics -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            正解率（Accuracy）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>全体のうち正しく予測できた割合</strong>を示します。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                例: 100件中80件が正解なら、正解率は0.8（80%）です。
+                            </p>
+                            <div class="mt-3 p-3 bg-green-50 rounded border border-green-200">
+                                <p class="text-xs text-green-800">
+                                    <strong>目安:</strong> 0.8以上で良好とされます。1.0に近いほど良い結果です。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if (evaluation_results.roc_auc is not none) or (evaluation_results.auc is not none) %}
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            AUC（Area Under Curve）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>分類の良し悪しを示す総合指標</strong>です。ROC曲線の下の面積を表します。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                0.5はランダムな予測と同じ、1.0は完璧な予測を意味します。
+                            </p>
+                            <div class="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                                <p class="text-xs text-blue-800">
+                                    <strong>目安:</strong> 0.7以上で良好とされます。0.9以上は優秀な結果です。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            適合率（Precision）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>「陽性」と予測したもののうち、実際に陽性だった割合</strong>です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                例: 「購入する」と予測した100人のうち、実際に購入したのが90人なら、適合率は0.9です。
+                            </p>
+                            <div class="mt-3 p-3 bg-purple-50 rounded border border-purple-200">
+                                <p class="text-xs text-purple-800">
+                                    <strong>使いどころ:</strong> 誤検出（偽陽性）を減らしたいときに重視します。スパムメールの検出など。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            再現率（Recall）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>実際の陽性のうち、正しく検出できた割合</strong>です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                例: 実際に購入した100人のうち、80人を「購入する」と予測できたら、再現率は0.8です。
+                            </p>
+                            <div class="mt-3 p-3 bg-orange-50 rounded border border-orange-200">
+                                <p class="text-xs text-orange-800">
+                                    <strong>使いどころ:</strong> 見逃し（偽陰性）を減らしたいときに重視します。病気の診断など。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                            F1スコア
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>適合率と再現率のバランスを示す指標</strong>です。両方の指標を統合した値です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                適合率と再現率の調和平均で計算されます。どちらか一方が低いとF1スコアも低くなります。
+                            </p>
+                            <div class="mt-3 p-3 bg-indigo-50 rounded border border-indigo-200">
+                                <p class="text-xs text-indigo-800">
+                                    <strong>目安:</strong> 0.7以上で良好とされます。バランスの良いモデルを評価するのに適しています。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Regression Metrics -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                            RMSE（Root Mean Squared Error）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>予測誤差の大きさを示す指標</strong>です。予測値と実際の値の差を2乗して平均し、平方根を取った値です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                例: 売上を予測する場合、RMSEが1000円なら、平均的に1000円程度の誤差があることを意味します。
+                            </p>
+                            <div class="mt-3 p-3 bg-red-50 rounded border border-red-200">
+                                <p class="text-xs text-red-800">
+                                    <strong>特徴:</strong> 大きな誤差に敏感です。外れ値があるとRMSEは大きくなります。0に近いほど良い結果です。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            MAE（Mean Absolute Error）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>平均的な予測誤差</strong>を示します。予測値と実際の値の差の絶対値を平均した値です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                例: MAEが500円なら、平均的に500円程度の誤差があることを意味します。
+                            </p>
+                            <div class="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                                <p class="text-xs text-blue-800">
+                                    <strong>特徴:</strong> 外れ値の影響を受けにくい指標です。RMSEより直感的に理解しやすいです。0に近いほど良い結果です。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            R²スコア（決定係数）
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 mb-2">
+                                <strong>予測がどれだけデータを説明できているか</strong>を示す指標です。
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                1.0に近いほど、モデルがデータをよく説明できていることを意味します。0.0は平均値と同じ予測、負の値は平均値より悪い予測を意味します。
+                            </p>
+                            <div class="mt-3 p-3 bg-green-50 rounded border border-green-200">
+                                <p class="text-xs text-green-800">
+                                    <strong>目安:</strong> 0.7以上で良好とされます。0.9以上は優秀な結果です。1.0に近いほど良い結果です。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tips Section -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        ポイント
+                    </h3>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>指標は<strong>1つだけでなく、複数を組み合わせて</strong>評価することが重要です</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>ビジネスの目的に応じて<strong>重視する指標を変える</strong>ことが大切です</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>結果が思わしくない場合は、<strong>改善提案</strong>を参考にしてください</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Modal functions
+function openHelpModal() {
+    document.getElementById('helpModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}モデル比較 - Insight Report{% endblock %}
+
+{% block content %}
+<div class="section-spacing animate-fade-in">
+    <!-- Header Section -->
+    <div class="mb-16">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4" style="letter-spacing: -0.02em;">モデル比較</h1>
+        <p class="text-lg text-gray-500" style="line-height: 1.6;">学習済みモデルのパフォーマンス評価</p>
+        <div class="flex items-center gap-4 mt-6">
+            <span class="badge badge-primary">
+                {{ '分類' if problem_type == 'classification' else '回帰' }}
+            </span>
+            <span class="text-sm text-gray-500">ターゲット: <strong class="text-gray-700">{{ target_column }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Preprocessing Info -->
+    <div class="card-minimal mb-12">
+        <h3 class="text-lg font-semibold text-gray-900 mb-8">前処理サマリ</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">数値特徴量</h4>
+                <div class="data-table">
+                    <table style="width: 100%; border: none;">
+                        <tbody>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">件数</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">{{ preprocessing_log.numeric_count }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">補完</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">中央値</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">スケーリング</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">StandardScaler</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">カテゴリ特徴量</h4>
+                <div class="data-table">
+                    <table style="width: 100%; border: none;">
+                        <tbody>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">件数</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">{{ preprocessing_log.categorical_count }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">補完</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">"missing"</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: var(--color-gray-600);">エンコーディング</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 500;">OneHotEncoder</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model List -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-8">モデルパフォーマンス</h2>
+        <div class="space-y-4">
+            {% for model in model_results.model_comparison %}
+            <div class="card-minimal {{ 'border-blue-500' if model.model_name == model_results.best_model_name else '' }}" 
+                 style="{{ 'border-width: 2px;' if model.model_name == model_results.best_model_name else '' }}">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg flex items-center justify-center {{ 'bg-blue-50 text-blue-700' if model.model_name == model_results.best_model_name else 'bg-gray-100 text-gray-500' }}">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                {{ model.model_name }}
+                                {% if model.model_name == model_results.best_model_name %}
+                                <span class="badge badge-primary">BEST</span>
+                                {% endif %}
+                            </h4>
+                            <p class="text-sm text-gray-500 mt-1">
+                                {% if problem_type == 'classification' %}
+                                {{ 'AUC' if model.auc is not none else 'Accuracy' }}最適化
+                                {% else %}
+                                RMSE最適化
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        {% if problem_type == 'classification' %}
+                        {% if model.auc is not none %}
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500 uppercase font-medium mb-1">AUC</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ "%.4f"|format(model.auc) }}</p>
+                        </div>
+                        {% endif %}
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500 uppercase font-medium mb-1">Accuracy</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ "%.4f"|format(model.accuracy) }}</p>
+                        </div>
+                        {% else %}
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500 uppercase font-medium mb-1">RMSE</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ "%.4f"|format(model.rmse) }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center pt-8">
+        <a href="/evaluate-model" class="btn-minimal btn-primary inline-flex items-center gap-2">
+            最良モデルを評価
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モデル学習中 - Insight Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .progress-container {
+            margin: 40px 0;
+        }
+        .progress-step {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #dee2e6;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .progress-step.running {
+            border-left-color: #0d6efd;
+            background-color: #e7f3ff;
+        }
+        .progress-step.completed {
+            border-left-color: #198754;
+            background-color: #d1e7dd;
+        }
+        .progress-step.error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .step-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 20px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            color: white;
+        }
+        .progress-step.running .step-icon {
+            background-color: #0d6efd;
+        }
+        .progress-step.completed .step-icon {
+            background-color: #198754;
+        }
+        .progress-step.error .step-icon {
+            background-color: #dc3545;
+        }
+        .time-info {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Insight Report</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">ホーム</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">モデル学習中</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <!-- プログレスバー -->
+                <div class="progress-container">
+                    <h5>全体の進捗</h5>
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div id="overall-progress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">
+                            <span id="progress-text">0%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 時間情報 -->
+                    <div class="time-info">
+                        <div>経過時間: <span id="elapsed-time">0秒</span></div>
+                        <div>推定残り時間: <span id="remaining-time">計算中...</span></div>
+                    </div>
+                </div>
+                
+                <!-- ステップ詳細 -->
+                <div class="mt-4">
+                    <h5>処理ステップ</h5>
+                    <div id="steps-container">
+                        <!-- ステップはJavaScriptで動的に追加 -->
+                    </div>
+                </div>
+                
+                <!-- エラーメッセージ -->
+                <div id="error-message" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- 完了後のメッセージ -->
+        <div id="completion-message" class="alert alert-success mt-3" style="display: none;">
+            <h5>モデル学習が完了しました！</h5>
+            <p>結果を確認する準備ができました。</p>
+            <a href="/model-comparison" class="btn btn-primary">結果を確認する</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+    <script>
+        // セッションIDを取得
+        const sessionId = '{{ session_id }}';
+        
+        // 進捗ポーリングを開始
+        const progressTracker = new ProgressTracker(sessionId);
+        progressTracker.start();
+    </script>
+</body>
+</html>
+
