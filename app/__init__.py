@@ -25,7 +25,17 @@ def create_app(config_class=Config):
     app.config['SESSION_PERMANENT'] = config_class.SESSION_PERMANENT
     app.config['PERMANENT_SESSION_LIFETIME'] = config_class.PERMANENT_SESSION_LIFETIME
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SECURE'] = False  # HTTPS使用時はTrueに変更
+    app.config['SESSION_COOKIE_SECURE'] = config_class.SESSION_COOKIE_SECURE
+    
+    # 本番環境でSECRET_KEYが環境変数で設定されていない場合の警告
+    if config_class.IS_PRODUCTION and not config_class._secret_key_env:
+        import warnings
+        warnings.warn(
+            "警告: 本番環境でSECRET_KEYが環境変数で設定されていません。"
+            "セッションが再起動のたびに無効になります。"
+            "環境変数SECRET_KEYを設定してください。",
+            UserWarning
+        )
     
     # ルーティングの登録
     from app.routes import register_routes

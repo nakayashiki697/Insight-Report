@@ -11,7 +11,14 @@ class Config:
     """アプリケーション設定"""
     
     # 基本設定
-    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+    # SECRET_KEY: 環境変数から取得、なければランダム生成（開発用）
+    # 本番環境では必ず環境変数で設定すること
+    _secret_key_env = os.environ.get('SECRET_KEY')
+    SECRET_KEY = _secret_key_env or secrets.token_hex(32)
+    
+    # 環境判定
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+    IS_PRODUCTION = FLASK_ENV == 'production' or os.environ.get('HF_SPACE_ID') is not None
     
     # ファイル制限
     MAX_ROWS = 100000
@@ -26,9 +33,13 @@ class Config:
     TEMP_FOLDER = BASE_DIR / 'temp'
     
     # ディレクトリの作成（存在しない場合）
-    UPLOAD_FOLDER.mkdir(exist_ok=True)
-    OUTPUT_FOLDER.mkdir(exist_ok=True)
-    TEMP_FOLDER.mkdir(exist_ok=True)
+    UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+    OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
+    TEMP_FOLDER.mkdir(parents=True, exist_ok=True)
+    
+    # ユーザーデータディレクトリの作成
+    DATA_FOLDER = BASE_DIR / 'data'
+    DATA_FOLDER.mkdir(parents=True, exist_ok=True)
     
     # モデル設定
     RANDOM_STATE = 42
@@ -83,4 +94,5 @@ class Config:
     # セッション設定
     SESSION_PERMANENT = False
     PERMANENT_SESSION_LIFETIME = 3600  # 1時間
-
+    # HTTPS使用時（本番環境）はTrueに設定
+    SESSION_COOKIE_SECURE = IS_PRODUCTION

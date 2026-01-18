@@ -52,9 +52,10 @@ class User:
     @classmethod
     def _load_data(cls) -> Dict:
         """JSONファイルからデータを読み込む"""
+        # データディレクトリが存在しない場合は作成
+        cls.DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+        
         if not cls.DATA_FILE.exists():
-            # データディレクトリが存在しない場合は作成
-            cls.DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
             return {'users': []}
         
         try:
