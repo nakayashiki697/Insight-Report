@@ -120,6 +120,9 @@ reports/
 *.sqlite
 *.sqlite3
 
+# User data (authentication)
+data/users.json
+
 # Backup files
 *.bak
 *.backup

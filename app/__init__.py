@@ -24,10 +24,16 @@ def create_app(config_class=Config):
     app.config['SECRET_KEY'] = config_class.SECRET_KEY
     app.config['SESSION_PERMANENT'] = config_class.SESSION_PERMANENT
     app.config['PERMANENT_SESSION_LIFETIME'] = config_class.PERMANENT_SESSION_LIFETIME
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = False  # HTTPS使用時はTrueに変更
     
     # ルーティングの登録
     from app.routes import register_routes
     register_routes(app)
+    
+    # 認証ルートの登録
+    from app.auth.routes import register_auth_routes
+    register_auth_routes(app)
     
     return app
 

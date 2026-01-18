@@ -3,6 +3,7 @@
 """
 
 import os
+import secrets
 from pathlib import Path
 
 
@@ -10,7 +11,7 @@ class Config:
     """アプリケーション設定"""
     
     # 基本設定
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
     
     # ファイル制限
     MAX_ROWS = 100000

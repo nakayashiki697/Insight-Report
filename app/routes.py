@@ -14,6 +14,7 @@ from app.data.validator import validate_csv_file
 from app.data.detector import detect_problem_type, get_column_info
 from app.utils.progress import create_progress_tracker, get_progress_tracker
 from app.utils.cleanup import maybe_cleanup, cleanup_old_files, get_storage_usage
+from app.auth.decorators import login_required, admin_required
 
 
 def _clean_feature_names(feature_names):
@@ -88,12 +89,14 @@ def register_routes(app):
         }), 200
     
     @app.route('/api/storage')
+    @login_required
     def storage_status():
         """ストレージ使用状況を返す（管理用）"""
         usage = get_storage_usage()
         return jsonify(usage), 200
     
     @app.route('/api/cleanup', methods=['POST'])
+    @login_required
     def manual_cleanup():
         """手動クリーンアップを実行（管理用）"""
         max_age_hours = request.args.get('max_age_hours', 24, type=int)
@@ -111,6 +114,8 @@ def register_routes(app):
         return render_template('glossary.html')
     
     @app.route('/upload', methods=['GET', 'POST'])
+    @login_required
+    @rate_limit(max_requests=10, window_seconds=60)
     def upload():
         """CSVファイルアップロード（FR-001）"""
         if request.method == 'POST':
@@ -165,6 +170,7 @@ def register_routes(app):
         return render_template('upload.html')
     
     @app.route('/select-target', methods=['GET', 'POST'])
+    @login_required
     def select_target():
         """ターゲット列選択（FR-002）"""
         # セッションチェック
@@ -204,6 +210,7 @@ def register_routes(app):
         return render_template('select_target.html', column_info=column_info, problem_type=None)
     
     @app.route('/run-analysis')
+    @login_required
     def run_analysis():
         """分析実行ページ（自動EDA実行）"""
         # セッションチェック
@@ -320,6 +327,7 @@ def register_routes(app):
         return redirect(url_for('eda_results'))
     
     @app.route('/eda-results')
+    @login_required
     def eda_results():
         """EDA結果表示ページ"""
         # セッションチェック
@@ -341,6 +349,7 @@ def register_routes(app):
         )
     
     @app.route('/preprocessing-settings', methods=['GET', 'POST'])
+    @login_required
     def preprocessing_settings():
         """前処理設定ページ（Phase 7.2）"""
         # セッションチェック
@@ -418,6 +427,7 @@ def register_routes(app):
         )
     
     @app.route('/train-models')
+    @login_required
     def train_models():
         """前処理・モデル学習実行ページ（進捗表示付き）"""
         # セッションチェック
@@ -648,6 +658,7 @@ def register_routes(app):
     _session_data_storage = {}
     
     @app.route('/train-models-start', methods=['POST'])
+    @login_required
     def train_models_start():
         """モデル学習を開始（POST）"""
         # セッションチェック
@@ -879,6 +890,7 @@ def register_routes(app):
             traceback.print_exc()
     
     @app.route('/api/progress')
+    @login_required
     def get_progress():
         """進捗状況を取得するAPI"""
         session_id = request.args.get('session_id') or session.get('session_id')
@@ -927,6 +939,7 @@ def register_routes(app):
         return jsonify(progress_data)
     
     @app.route('/model-comparison')
+    @login_required
     def model_comparison():
         """モデル比較結果表示ページ"""
         # セッションチェック
@@ -948,6 +961,7 @@ def register_routes(app):
         )
     
     @app.route('/evaluate-model')
+    @login_required
     def evaluate_model():
         """モデル評価実行ページ"""
         # セッションチェック
@@ -1104,6 +1118,7 @@ def register_routes(app):
             return redirect(url_for('model_comparison'))
     
     @app.route('/evaluation-results')
+    @login_required
     def evaluation_results():
         """モデル評価結果表示ページ"""
         # セッションチェック
@@ -1215,6 +1230,7 @@ def register_routes(app):
         )
     
     @app.route('/xai-analysis')
+    @login_required
     def xai_analysis():
         """XAI分析実行ページ"""
         # セッションチェック
@@ -1381,6 +1397,7 @@ def register_routes(app):
             return redirect(url_for('evaluation_results'))
     
     @app.route('/xai-results')
+    @login_required
     def xai_results():
         """XAI結果表示ページ"""
         # セッションチェック
@@ -1466,6 +1483,7 @@ def register_routes(app):
         )
     
     @app.route('/generate-report')
+    @login_required
     def generate_report():
         """PDFレポート生成エンドポイント"""
         # セッションチェック
@@ -1519,6 +1537,7 @@ def register_routes(app):
             return redirect(url_for('xai_results'))
     
     @app.route('/api/columns')
+    @login_required
     def get_columns():
         """列情報を取得するAPI"""
         if 'column_info' not in session:
