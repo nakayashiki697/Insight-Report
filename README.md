@@ -1,3 +1,14 @@
+---
+title: Insight Report
+emoji: 📊
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # Insight Report
 
 **デモサイト**: [https://nakayashiki-insight-report.hf.space](https://nakayashiki-insight-report.hf.space)
