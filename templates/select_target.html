@@ -18,6 +18,19 @@
         </button>
     </div>
 
+    {% if demo_sample == 'titanic' %}
+    <div class="card-minimal mb-8 p-5 border border-blue-100 bg-blue-50">
+        <p class="text-sm font-semibold text-gray-900 mb-2">Titanicサンプルデータ</p>
+        <p class="text-sm text-gray-700 mb-3" style="line-height: 1.7;">
+            乗客891名の客室等級、性別、年齢、同乗家族数、運賃、乗船港などを使い、
+            <span class="font-medium">Perished</span>（1=死亡、0=生存）を予測する分類問題です。
+        </p>
+        <p class="text-xs text-blue-700">
+            デモでは <span class="font-semibold">Perished</span> をターゲット列に選ぶのがおすすめです。
+        </p>
+    </div>
+    {% endif %}
+
     <!-- Problem Type Detection -->
     {% if problem_type %}
     <div class="card-minimal mb-8 text-center p-4">
@@ -43,7 +56,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% for column_name, info in column_info.items() %}
                 <label class="column-select-card block">
-                    <input type="radio" name="target_column" value="{{ column_name }}" required 
+                    <input type="radio" name="target_column" value="{{ column_name }}" required
+                           {% if demo_sample == 'titanic' and column_name == 'Perished' %}checked{% endif %}
                            class="hidden column-radio">
                     <div class="column-card p-6 border-2 border-gray-200 rounded-lg cursor-pointer transition-all 
                                 hover:border-gray-300 hover:bg-gray-50">
@@ -59,6 +73,9 @@
                                     <span class="text-xs text-gray-500">ユニーク値: {{ info.unique_count }}</span>
                                     {% if info.null_count > 0 %}
                                     <span class="text-xs text-orange-600">欠損: {{ info.null_count }} ({{ "%.1f"|format(info.null_ratio * 100) }}%)</span>
+                                    {% endif %}
+                                    {% if demo_sample == 'titanic' and column_name == 'Perished' %}
+                                    <span class="text-xs text-blue-700 font-medium">おすすめターゲット</span>
                                     {% endif %}
                                 </div>
                             </div>

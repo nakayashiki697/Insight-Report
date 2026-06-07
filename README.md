@@ -13,6 +13,8 @@ license: mit
 
 **デモサイト**: [https://nakayashiki-insight-report.hf.space](https://nakayashiki-insight-report.hf.space)
 
+応募用デモではTitanicの乗客データを同梱し、`Perished`（1=死亡、0=生存）を予測する分類問題としてすぐ試せます。
+
 ---
 
 ## 特徴

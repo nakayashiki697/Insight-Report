@@ -2,7 +2,7 @@
 ルーティング定義
 """
 
-import csv
+import shutil
 import uuid
 import pickle
 import threading
@@ -69,44 +69,11 @@ def allowed_file(filename: str) -> bool:
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 
-def _create_demo_csv(file_path):
-    """応募用デモで使う小さなサンプル売上データを生成する。"""
-    fieldnames = [
-        'month',
-        'region',
-        'ad_spend',
-        'website_visits',
-        'repeat_customers',
-        'discount_rate',
-        'monthly_sales',
-    ]
-    regions = ['Tokyo', 'Osaka', 'Nagoya', 'Fukuoka']
-
-    with open(file_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        for i in range(1, 81):
-            ad_spend = 80 + i * 7 + (i % 5) * 12
-            website_visits = 400 + i * 18 + (i % 7) * 35
-            repeat_customers = 20 + (i % 11) * 4 + i // 4
-            discount_rate = round(0.05 + (i % 6) * 0.02, 2)
-            monthly_sales = int(
-                1200
-                + ad_spend * 3.1
-                + website_visits * 1.8
-                + repeat_customers * 24
-                - discount_rate * 600
-                + (i % 4) * 85
-            )
-            writer.writerow({
-                'month': i,
-                'region': regions[i % len(regions)],
-                'ad_spend': ad_spend,
-                'website_visits': website_visits,
-                'repeat_customers': repeat_customers,
-                'discount_rate': discount_rate,
-                'monthly_sales': monthly_sales,
-            })
+def _copy_demo_csv(file_path):
+    """応募用デモで使うTitanicサンプルデータをアップロード領域へコピーする。"""
+    if not Config.DEMO_DATA_FILE.exists():
+        raise FileNotFoundError(f'Demo data file not found: {Config.DEMO_DATA_FILE}')
+    shutil.copyfile(Config.DEMO_DATA_FILE, file_path)
 
 
 def register_routes(app):
@@ -197,6 +164,7 @@ def register_routes(app):
                 return redirect(request.url)
             
             # セッションにデータを保存（JSONシリアライズ可能な型に変換）
+            session.pop('demo_sample', None)
             session['session_id'] = session_id
             session['file_path'] = str(file_path)
             session['filename'] = filename
@@ -219,9 +187,13 @@ def register_routes(app):
             return redirect(url_for('upload'))
 
         session_id = str(uuid.uuid4())
-        filename = 'demo_sales.csv'
+        filename = 'titanic_train.csv'
         file_path = Config.UPLOAD_FOLDER / f"{session_id}_{filename}"
-        _create_demo_csv(file_path)
+        try:
+            _copy_demo_csv(file_path)
+        except FileNotFoundError:
+            flash('サンプルデータが見つかりませんでした。', 'error')
+            return redirect(url_for('upload'))
 
         df, error_msg = validate_csv_file(file_path)
         if error_msg:
@@ -233,8 +205,9 @@ def register_routes(app):
         session['filename'] = filename
         session['data_shape'] = {'rows': int(len(df)), 'columns': int(len(df.columns))}
         session['column_info'] = get_column_info(df)
+        session['demo_sample'] = 'titanic'
 
-        flash('サンプルデータを読み込みました。予測したい列を選んでください。', 'success')
+        flash('Titanicのサンプルデータを読み込みました。おすすめのターゲット列は Perished です。', 'success')
         return redirect(url_for('select_target'))
     
     @app.route('/select-target', methods=['GET', 'POST'])
@@ -275,7 +248,12 @@ def register_routes(app):
             return redirect(url_for('run_analysis'))
         
         # GETリクエスト時はproblem_typeはNone
-        return render_template('select_target.html', column_info=column_info, problem_type=None)
+        return render_template(
+            'select_target.html',
+            column_info=column_info,
+            problem_type=None,
+            demo_sample=session.get('demo_sample')
+        )
     
     @app.route('/run-analysis')
     @login_required

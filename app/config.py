@@ -48,6 +48,9 @@ class Config:
     # ユーザーデータディレクトリの作成
     DATA_FOLDER = BASE_DIR / 'data'
     DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+
+    # 応募用デモデータ
+    DEMO_DATA_FILE = BASE_DIR / 'app' / 'demo_data' / 'titanic_train.csv'
     
     # モデル設定
     RANDOM_STATE = 42

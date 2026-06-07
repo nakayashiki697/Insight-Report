@@ -28,6 +28,15 @@
             機能を見る
         </a>
     </div>
+    {% if config.get('PORTFOLIO_DEMO_MODE') %}
+        <div class="mt-8 max-w-2xl mx-auto rounded-lg border border-blue-100 bg-blue-50 px-5 py-4 text-left">
+            <p class="text-sm font-semibold text-gray-900 mb-2">サンプルデータ: Titanic乗客データ</p>
+            <p class="text-sm text-gray-700" style="line-height: 1.7;">
+                乗客891名の客室等級、性別、年齢、同乗家族数、運賃、乗船港などから、
+                <span class="font-medium">Perished</span>（1=死亡、0=生存）を予測する分類デモです。
+            </p>
+        </div>
+    {% endif %}
 </div>
 
 <!-- Target Users Section -->

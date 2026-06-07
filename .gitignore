@@ -68,6 +68,8 @@ render.yaml
 
 # Sample/test data
 *.csv
+!app/demo_data/
+!app/demo_data/titanic_train.csv
 sample_data/
 *.xlsx
 *.xls
