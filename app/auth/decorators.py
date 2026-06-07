@@ -5,7 +5,16 @@
 
 from functools import wraps
 from flask import session, redirect, url_for, flash, request
+from app.config import Config
 from app.auth.models import User
+
+
+def _start_demo_session():
+    """応募用デモ公開時だけ、閲覧者をデモユーザーとして扱う。"""
+    session.permanent = True
+    session['user_id'] = 'portfolio-demo-user'
+    session['username'] = 'デモユーザー'
+    session['is_admin'] = False
 
 
 def login_required(f):
@@ -16,8 +25,11 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
+            if Config.PORTFOLIO_DEMO_MODE:
+                _start_demo_session()
+                return f(*args, **kwargs)
             flash('ログインが必要です', 'error')
-            return redirect(url_for('auth.login', next=request.url))
+            return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 

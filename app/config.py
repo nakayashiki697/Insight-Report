@@ -7,6 +7,13 @@ import secrets
 from pathlib import Path
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
 class Config:
     """アプリケーション設定"""
     
@@ -19,6 +26,7 @@ class Config:
     # 環境判定
     FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
     IS_PRODUCTION = FLASK_ENV == 'production' or os.environ.get('HF_SPACE_ID') is not None
+    PORTFOLIO_DEMO_MODE = _env_flag('PORTFOLIO_DEMO_MODE')
     
     # ファイル制限
     MAX_ROWS = 100000
@@ -92,7 +100,7 @@ class Config:
     PDF_STYLE = BASE_DIR / 'static' / 'css' / 'report.css'
     
     # セッション設定
-    SESSION_PERMANENT = False
-    PERMANENT_SESSION_LIFETIME = 3600  # 1時間
+    SESSION_PERMANENT = _env_flag('SESSION_PERMANENT')
+    PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME_SECONDS', '3600'))
     # HTTPS使用時（本番環境）はTrueに設定
     SESSION_COOKIE_SECURE = IS_PRODUCTION

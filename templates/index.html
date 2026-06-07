@@ -12,9 +12,18 @@
         データ分析レポート自動生成ツール
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a href="/upload" class="btn-minimal btn-primary text-lg px-8 py-4">
-            使い始める
-        </a>
+        {% if config.get('PORTFOLIO_DEMO_MODE') %}
+            <a href="{{ url_for('demo_sample') }}" class="btn-minimal btn-primary text-lg px-8 py-4">
+                サンプルデータで試す
+            </a>
+            <a href="{{ url_for('upload') }}" class="btn-minimal btn-secondary text-lg px-8 py-4">
+                CSVをアップロード
+            </a>
+        {% else %}
+            <a href="/upload" class="btn-minimal btn-primary text-lg px-8 py-4">
+                使い始める
+            </a>
+        {% endif %}
         <a href="#features" class="btn-minimal btn-secondary text-lg px-8 py-4">
             機能を見る
         </a>
@@ -209,9 +218,15 @@
     <div class="card-minimal" style="padding: 64px 48px;">
         <h2 class="text-3xl font-semibold text-gray-900 mb-4" style="letter-spacing: -0.02em;">今すぐ始める</h2>
         <p class="text-lg text-gray-600 mb-8" style="line-height: 1.7;">データ分析を自動化し、モデルの説明可能性を高めましょう</p>
-        <a href="/upload" class="btn-minimal btn-primary text-lg px-10 py-4 inline-block">
-            始める
-        </a>
+        {% if config.get('PORTFOLIO_DEMO_MODE') %}
+            <a href="{{ url_for('demo_sample') }}" class="btn-minimal btn-primary text-lg px-10 py-4 inline-block">
+                サンプルデータで試す
+            </a>
+        {% else %}
+            <a href="/upload" class="btn-minimal btn-primary text-lg px-10 py-4 inline-block">
+                始める
+            </a>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

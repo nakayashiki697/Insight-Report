@@ -2,6 +2,7 @@
 ルーティング定義
 """
 
+import csv
 import uuid
 import pickle
 import threading
@@ -14,6 +15,7 @@ from app.data.validator import validate_csv_file
 from app.data.detector import detect_problem_type, get_column_info
 from app.utils.progress import create_progress_tracker, get_progress_tracker
 from app.utils.cleanup import maybe_cleanup, cleanup_old_files, get_storage_usage
+from app.utils.rate_limit import rate_limit
 from app.auth.decorators import login_required, admin_required
 
 
@@ -67,6 +69,46 @@ def allowed_file(filename: str) -> bool:
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 
+def _create_demo_csv(file_path):
+    """応募用デモで使う小さなサンプル売上データを生成する。"""
+    fieldnames = [
+        'month',
+        'region',
+        'ad_spend',
+        'website_visits',
+        'repeat_customers',
+        'discount_rate',
+        'monthly_sales',
+    ]
+    regions = ['Tokyo', 'Osaka', 'Nagoya', 'Fukuoka']
+
+    with open(file_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for i in range(1, 81):
+            ad_spend = 80 + i * 7 + (i % 5) * 12
+            website_visits = 400 + i * 18 + (i % 7) * 35
+            repeat_customers = 20 + (i % 11) * 4 + i // 4
+            discount_rate = round(0.05 + (i % 6) * 0.02, 2)
+            monthly_sales = int(
+                1200
+                + ad_spend * 3.1
+                + website_visits * 1.8
+                + repeat_customers * 24
+                - discount_rate * 600
+                + (i % 4) * 85
+            )
+            writer.writerow({
+                'month': i,
+                'region': regions[i % len(regions)],
+                'ad_spend': ad_spend,
+                'website_visits': website_visits,
+                'repeat_customers': repeat_customers,
+                'discount_rate': discount_rate,
+                'monthly_sales': monthly_sales,
+            })
+
+
 def register_routes(app):
     """ルーティングを登録"""
     
@@ -89,14 +131,14 @@ def register_routes(app):
         }), 200
     
     @app.route('/api/storage')
-    @login_required
+    @admin_required
     def storage_status():
         """ストレージ使用状況を返す（管理用）"""
         usage = get_storage_usage()
         return jsonify(usage), 200
     
     @app.route('/api/cleanup', methods=['POST'])
-    @login_required
+    @admin_required
     def manual_cleanup():
         """手動クリーンアップを実行（管理用）"""
         max_age_hours = request.args.get('max_age_hours', 24, type=int)
@@ -168,6 +210,32 @@ def register_routes(app):
             return redirect(url_for('select_target'))
         
         return render_template('upload.html')
+
+    @app.route('/demo-sample')
+    @login_required
+    def demo_sample():
+        """応募用デモで、サンプルCSVをアップロード済み状態にする。"""
+        if not Config.PORTFOLIO_DEMO_MODE:
+            return redirect(url_for('upload'))
+
+        session_id = str(uuid.uuid4())
+        filename = 'demo_sales.csv'
+        file_path = Config.UPLOAD_FOLDER / f"{session_id}_{filename}"
+        _create_demo_csv(file_path)
+
+        df, error_msg = validate_csv_file(file_path)
+        if error_msg:
+            flash(error_msg, 'error')
+            return redirect(url_for('upload'))
+
+        session['session_id'] = session_id
+        session['file_path'] = str(file_path)
+        session['filename'] = filename
+        session['data_shape'] = {'rows': int(len(df)), 'columns': int(len(df.columns))}
+        session['column_info'] = get_column_info(df)
+
+        flash('サンプルデータを読み込みました。予測したい列を選んでください。', 'success')
+        return redirect(url_for('select_target'))
     
     @app.route('/select-target', methods=['GET', 'POST'])
     @login_required

@@ -35,6 +35,7 @@ def register_auth_routes(app):
                 return render_template('login.html')
             
             # セッションにユーザー情報を保存
+            session.permanent = app.config.get('SESSION_PERMANENT', False)
             session['user_id'] = user.id
             session['username'] = user.username
             session['is_admin'] = user.is_admin
